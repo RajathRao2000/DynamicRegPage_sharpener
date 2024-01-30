@@ -5,6 +5,7 @@ let arr = {};
 let fullList = document.getElementById("list");
 let resourceArr = [];
 window.addEventListener("DOMContentLoaded",displayLocalStorage())
+let updatingUser=false,Gid=""
 async function displayLocalStorage() {
 
   await axios
@@ -33,6 +34,7 @@ async function displayLocalStorage() {
 
 async function handleFormSubmit(event) {
   event.preventDefault();
+
   let tempObj={}
   let expenceAmount = document.getElementById("expenceAmount").value;
   let description = document.getElementById("description").value;
@@ -44,7 +46,23 @@ async function handleFormSubmit(event) {
     category: category,
     description: description,
   });
+  if(updatingUser){
+    console.log("inside updating user",Gid)
+    updatingUser=false
+    let config = {
+      method: "put",
+      url: "https://crudcrud.com/api/5ce0305758e14ec0b3a3dd4efb6e748d/usrInfo/"+Gid,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+  
+    await axios(config)
+      .then((res) => tempObj=res.data)
+      .catch((err) => console.log("error:", err));
 
+  }else{
   let config = {
     method: "post",
     url: "https://crudcrud.com/api/5ce0305758e14ec0b3a3dd4efb6e748d/usrInfo",
@@ -57,6 +75,7 @@ async function handleFormSubmit(event) {
   await axios(config)
     .then((res) => tempObj=res.data)
     .catch((err) => console.log("error:", err));
+}
 
   let newLi = document.createElement("li");
   newLi.className = "list-group-item";
@@ -89,16 +108,18 @@ async function deleter(event) {
 
 async function editer(event) {
   event.preventDefault();
+  updatingUser=true
   if (event.target.classList.contains("edit-btn")) {
     const usrDetails = event.target.parentElement.parentElement;
     console.log(usrDetails);
     const id =
       event.target.parentElement.parentElement.firstElementChild.textContent;
+      Gid=id
     let usrDetailsArr =
       usrDetails.firstChild.nextSibling.textContent.split("-");
     console.log(usrDetailsArr);
     // let usrDetailsArr=usrDetails.
-    await axios.delete("https://crudcrud.com/api/5ce0305758e14ec0b3a3dd4efb6e748d/usrInfo/"+id)
+    // await axios.delete("https://crudcrud.com/api/5ce0305758e14ec0b3a3dd4efb6e748d/usrInfo/"+id)
     fullList.removeChild(usrDetails);
 
     document.getElementById("expenceAmount").value = usrDetailsArr[0];
